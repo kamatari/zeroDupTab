@@ -1,0 +1,12 @@
+{
+	"manifest_version":2,
+	"name":"zeroDupTabs",
+	"description":"when you tried to open duplicate tab, close it and transit",
+	"version":"1.0",
+	"background": {
+		"scripts" :	["zeroDupTabs.js"]
+	},
+	"permissions":[
+		"history","tabs"
+	],
+}
