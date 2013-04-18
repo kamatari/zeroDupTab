@@ -1,20 +1,22 @@
 // zeroDupTabs.js
 // Created by kamatari
 
+// TODO
+// ï¿½ï¿½ï¿½ê¥¿ï¿½Ö¤Ë¤ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½moveï¿½Ç¤ï¿½ï¿½Ê¤ï¿½
+// moveï¿½ï¿½ï¿½ï¿½tabï¿½ï¿½activeï¿½Ë¤ï¿½ï¿½ï¿½ï¿½ï¿½
+// extension ï¿½ï¿½Í­ï¿½ï¿½ï¿½Ë¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½duplicateï¿½ï¿½ï¿½ï¿½ï¿½Ã¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½errorï¿½ï¿½ï¿½ï¿½
+
 var MaxTabArrayNum	= 9999;
 var stockTabsCount	= 0;
 var openedTabArray	= new Array();
 var closedTabArray	= new Array();
 
-// extension¤¬Í­¸ú¤Ë¤Ê¤Ã¤¿»þÅÀ¤Ç³«¤¤¤Æ¤¤¤ëtab¤Î¾ðÊó¤òstock
+// extensionï¿½ï¿½Í­ï¿½ï¿½ï¿½Ë¤Ê¤Ã¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½tabï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½stock
 if (openedTabArray.length == 0) {
 	chrome.windows.getAll({"populate" : true}, setAllTabInfo);
 }
 
-// ¿·¤·¤¯tab¤ò³«¤¤¤¿»þ¤È¹¹¿·¤µ¤ì¤¿»þ¤Îurl¤òstock
-// ¸ÇÄê¥¿¥Ö¤Ë¤·¤Æ¤ë¤Èmove¤Ç¤­¤Ê¤¤
-// move¤·¤¿tab¤òactive¤Ë¤·¤¿¤¤
-// extension ¤òÍ­¸ú¤Ë¤·¤¿»þÅÀ¤Çduplicate¤¬¤¢¤Ã¤¿¾ì¹ç¤Îerror½èÍý
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tabï¿½ò³«¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì¤¿ï¿½ï¿½ï¿½ï¿½urlï¿½ï¿½stock
 chrome.tabs.onUpdated.addListener(
 	function(updateTabId, changeInfo) {
         for (key in openedTabArray) {
@@ -33,7 +35,7 @@ chrome.tabs.onUpdated.addListener(
 );
 
 /*
-// ÊÄ¤¸¤¿tab¤Îurl¤òopentab¤«¤éºï½ü¤·¤Ê¤±¤ì¤Ð¡£
+// ï¿½Ä¤ï¿½ï¿½ï¿½tabï¿½ï¿½urlï¿½ï¿½opentabï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
 		if (openedTabArray[closedTabId] != null) {
@@ -44,7 +46,7 @@ chrome.tabs.onRemoved.addListener(
 );
 */
 
-// extension¤Î¥¢¥¤¥³¥ó¤òclick¤Ç,stock¤·¤Æ¤¢¤ëurl¤Ç¿·µ¬tab¤òºîÀ®
+// extensionï¿½Î¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½clickï¿½ï¿½,stockï¿½ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½urlï¿½Ç¿ï¿½ï¿½ï¿½tabï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 chrome.browserAction.onClicked.addListener(
 	function() {
 		if (closedTabArray.length > 0) {
