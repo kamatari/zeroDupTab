@@ -1,14 +1,7 @@
 // zeroDupTabs.js
 // Created by kamatari
 
-// TODO
-// [__] 固定tabにしているとmoveできない
-// [__] removeしたタブをactiveにする
-// [__] extensionを有効にした時点でduplicateがあった場合のerror処理
-// [__] tabのindexが変わったら更新しないといけない
-
-var MaxTabArrayNum	= 9999;
-var stockTabsCount	= 0;
+var MaxTabArrayNum	= 10000;
 var openedTabArray	= new Array();
 var closedTabArray	= new Array();
 
@@ -19,31 +12,27 @@ if (openedTabArray.length == 0) {
 
 // 新しくtabを開いた時と更新された時のurlをstock
 chrome.tabs.onUpdated.addListener(
-	function(updateTabId, changeInfo, tab) {
-		if (changeInfo.url != null) {
-			openedTabArray[updateTabId] = changeInfo.url;
-			checkLengthAndArrayShift(openedTabArray);
-		}
-        // extension のメイン機能、tabが被ってたら閉じてmoveしてactiveにする機能
+	function(updateTabId, changeInfo, tabInfo) {
         for (key in openedTabArray) {
-                //console.log('outer stock url ' + openedTabArray[key]['url']);
             if (openedTabArray[key].url === changeInfo.url) {
-                //console.log('stock url ' + openedTabArray[key]['url']);
-                //chrome.tabs.remove(updateTabId);
-                //chrome.tabs.move(parseInt(key), {'index':-1});
-                //console.log('updateTabId ' + updateTabId)
-                //console.log('highlight '+ openedTabArray[key]['index']);
+                chrome.tabs.remove(updateTabId);
                 if (openedTabArray[key]['index'] != null) {
                     chrome.tabs.highlight({tabs: [openedTabArray[key]['index']]},function(){});
                 }
             }
         }
-
+        // 新規tabの情報をstockしておく
+		if (changeInfo.url != null) {
+			openedTabArray[updateTabId] = {
+                'url'   :   changeInfo.url,
+                'index' :   tabInfo.index
+            };
+			checkLengthAndArrayShift(openedTabArray);
+		}
 	}
 );
 
-/*
-// 閉じたタブのurlを削除しなければ
+// 閉じたタブのurlを削除
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
 		if (openedTabArray[closedTabId] != null) {
@@ -52,28 +41,16 @@ chrome.tabs.onRemoved.addListener(
 		}
 	}
 );
-*/
 
-// extensionのアイコンをclickで,stockしてあるurlで新規tabを作成
-chrome.browserAction.onClicked.addListener(
-	function() {
-		if (closedTabArray.length > 0) {
-			chrome.tabs.create({"url" : closedTabArray.pop(),"selected":false});
-		}
-	}
-);
 
 
 function setAllTabInfo(AllTabInfo) {
 	for (var i=0; i<AllTabInfo.length; i++) {
 		for (var j=0; j<AllTabInfo[i]['tabs'].length; j++) {
-			openedTabArray[AllTabInfo[i]['tabs'][j].id] =
-            {
+			openedTabArray[AllTabInfo[i]['tabs'][j].id] = {
                 'url'   :   AllTabInfo[i]['tabs'][j].url,
                 'index' :   AllTabInfo[i]['tabs'][j].index
             };
-    console.log('setAlltabInfo '+openedTabArray[AllTabInfo[i]['tabs'][j].id]['url']);
-    console.log('setAlltabInfo '+openedTabArray[AllTabInfo[i]['tabs'][j].id]['index']);
 		}
 	}
 }
