@@ -10,18 +10,18 @@ if (openedTabArray.length == 0) {
 	chrome.windows.getAll({"populate" : true}, setAllTabInfo);
 }
 
-// 新しくtabを開いた時と更新された時のurlをstock
 chrome.tabs.onUpdated.addListener(
 	function(updateTabId, changeInfo, tabInfo) {
         for (key in openedTabArray) {
+            // すでに開いているurlが新規で開かれた時,removeしてすでに開いている方に
             if (openedTabArray[key].url === changeInfo.url) {
                 chrome.tabs.remove(updateTabId);
-                if (openedTabArray[key]['index'] != null) {
+                if (openedTabArray[key].index != null) {
                     chrome.tabs.highlight({tabs: [openedTabArray[key]['index']]},function(){});
                 }
             }
         }
-        // 新規tabの情報をstockしておく
+        // 開いた状態になっているurlとそのindexを保存
 		if (changeInfo.url != null) {
 			openedTabArray[updateTabId] = {
                 'url'   :   changeInfo.url,
@@ -36,12 +36,10 @@ chrome.tabs.onUpdated.addListener(
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
 		if (openedTabArray[closedTabId] != null) {
-			closedTabArray.push(openedTabArray[closedTabId]);
-			checkLengthAndArrayShift(closedTabArray);
+			delete openedTabArray[closedTabId];
 		}
 	}
 );
-
 
 
 function setAllTabInfo(AllTabInfo) {
