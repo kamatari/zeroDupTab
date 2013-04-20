@@ -2,40 +2,48 @@
 // Created by kamatari
 
 // TODO
-// ï¿½ï¿½ï¿½ê¥¿ï¿½Ö¤Ë¤ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½moveï¿½Ç¤ï¿½ï¿½Ê¤ï¿½
-// moveï¿½ï¿½ï¿½ï¿½tabï¿½ï¿½activeï¿½Ë¤ï¿½ï¿½ï¿½ï¿½ï¿½
-// extension ï¿½ï¿½Í­ï¿½ï¿½ï¿½Ë¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½duplicateï¿½ï¿½ï¿½ï¿½ï¿½Ã¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½errorï¿½ï¿½ï¿½ï¿½
+// [__] ¸ÇÄêtab¤Ë¤·¤Æ¤¤¤ë¤Èmove¤Ç¤­¤Ê¤¤
+// [__] remove¤·¤¿¥¿¥Ö¤òactive¤Ë¤¹¤ë
+// [__] extension¤òÍ­¸ú¤Ë¤·¤¿»þÅÀ¤Çduplicate¤¬¤¢¤Ã¤¿¾ì¹ç¤Îerror½èÍý
+// [__] tab¤Îindex¤¬ÊÑ¤ï¤Ã¤¿¤é¹¹¿·¤·¤Ê¤¤¤È¤¤¤±¤Ê¤¤
 
 var MaxTabArrayNum	= 9999;
 var stockTabsCount	= 0;
 var openedTabArray	= new Array();
 var closedTabArray	= new Array();
 
-// extensionï¿½ï¿½Í­ï¿½ï¿½ï¿½Ë¤Ê¤Ã¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½tabï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½stock
+// extension ¤¬Í­¸ú¤Ë¤Ê¤Ã¤¿»þÅÀ¤Ç³«¤¤¤Æ¤¤¤ëtab¤Î¾ðÊó¤òstock
 if (openedTabArray.length == 0) {
 	chrome.windows.getAll({"populate" : true}, setAllTabInfo);
 }
 
-// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tabï¿½ò³«¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ì¤¿ï¿½ï¿½ï¿½ï¿½urlï¿½ï¿½stock
+// ¿·¤·¤¯tab¤ò³«¤¤¤¿»þ¤È¹¹¿·¤µ¤ì¤¿»þ¤Îurl¤òstock
 chrome.tabs.onUpdated.addListener(
-	function(updateTabId, changeInfo) {
-        for (key in openedTabArray) {
-            if (openedTabArray[key] === changeInfo.url) {
-                console.log(changeInfo.url);
-                console.log(key);
-                chrome.tabs.remove(updateTabId);
-                chrome.tabs.move(parseInt(key), {'index':-1});
-            }
-        }
+	function(updateTabId, changeInfo, tab) {
 		if (changeInfo.url != null) {
 			openedTabArray[updateTabId] = changeInfo.url;
 			checkLengthAndArrayShift(openedTabArray);
 		}
+        // extension ¤Î¥á¥¤¥óµ¡Ç½¡¢tab¤¬Èï¤Ã¤Æ¤¿¤éÊÄ¤¸¤Æmove¤·¤Æactive¤Ë¤¹¤ëµ¡Ç½
+        for (key in openedTabArray) {
+                //console.log('outer stock url ' + openedTabArray[key]['url']);
+            if (openedTabArray[key].url === changeInfo.url) {
+                //console.log('stock url ' + openedTabArray[key]['url']);
+                //chrome.tabs.remove(updateTabId);
+                //chrome.tabs.move(parseInt(key), {'index':-1});
+                //console.log('updateTabId ' + updateTabId)
+                //console.log('highlight '+ openedTabArray[key]['index']);
+                if (openedTabArray[key]['index'] != null) {
+                    chrome.tabs.highlight({tabs: [openedTabArray[key]['index']]},function(){});
+                }
+            }
+        }
+
 	}
 );
 
 /*
-// ï¿½Ä¤ï¿½ï¿½ï¿½tabï¿½ï¿½urlï¿½ï¿½opentabï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¤ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½
+// ÊÄ¤¸¤¿¥¿¥Ö¤Îurl¤òºï½ü¤·¤Ê¤±¤ì¤Ð
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
 		if (openedTabArray[closedTabId] != null) {
@@ -46,7 +54,7 @@ chrome.tabs.onRemoved.addListener(
 );
 */
 
-// extensionï¿½Î¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½clickï¿½ï¿½,stockï¿½ï¿½ï¿½Æ¤ï¿½ï¿½ï¿½urlï¿½Ç¿ï¿½ï¿½ï¿½tabï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// extension¤Î¥¢¥¤¥³¥ó¤òclick¤Ç,stock¤·¤Æ¤¢¤ëurl¤Ç¿·µ¬tab¤òºîÀ®
 chrome.browserAction.onClicked.addListener(
 	function() {
 		if (closedTabArray.length > 0) {
@@ -59,7 +67,13 @@ chrome.browserAction.onClicked.addListener(
 function setAllTabInfo(AllTabInfo) {
 	for (var i=0; i<AllTabInfo.length; i++) {
 		for (var j=0; j<AllTabInfo[i]['tabs'].length; j++) {
-			openedTabArray[AllTabInfo[i]['tabs'][j].id] = AllTabInfo[i]['tabs'][j].url;
+			openedTabArray[AllTabInfo[i]['tabs'][j].id] =
+            {
+                'url'   :   AllTabInfo[i]['tabs'][j].url,
+                'index' :   AllTabInfo[i]['tabs'][j].index
+            };
+    console.log('setAlltabInfo '+openedTabArray[AllTabInfo[i]['tabs'][j].id]['url']);
+    console.log('setAlltabInfo '+openedTabArray[AllTabInfo[i]['tabs'][j].id]['index']);
 		}
 	}
 }
