@@ -13,7 +13,7 @@ if (openedTabArray.length == 0) {
 chrome.tabs.onUpdated.addListener(
 	function(updateTabId, changeInfo, tabInfo) {
         for (key in openedTabArray) {
-            // すでに開いているurlが新規で開かれた時,removeしてすでに開いている方に
+            // すでに開いているurlが新規で開かれた時,removeしてすでに開いている方をactiveにする
             if (openedTabArray[key].url === changeInfo.url) {
                 chrome.tabs.remove(updateTabId);
                 if (openedTabArray[key].index != null) {
@@ -36,6 +36,11 @@ chrome.tabs.onUpdated.addListener(
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
 		if (openedTabArray[closedTabId] != null) {
+            for(key in openedTabArray){
+                if(openedTabArray[closedTabId].index < openedTabArray[key].index) {
+                    openedTabArray[key].index = openedTabArray[key].index - 1;
+                }
+            }
 			delete openedTabArray[closedTabId];
 		}
 	}
