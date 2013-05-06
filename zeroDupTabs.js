@@ -21,8 +21,8 @@ chrome.tabs.onUpdated.addListener(
                 }
             }
         }
-        // 開いた状態になっているurlとそのindexを保存
-		if (changeInfo.url != null) {
+        // 開いた状態になっているurlとそのindexを保存 (newtabは除外)
+		if (changeInfo.url != null && changeInfo.url != 'chrome://newtab/') {
 			openedTabArray[updateTabId] = {
                 'url'   :   changeInfo.url,
                 'index' :   tabInfo.index
@@ -50,6 +50,9 @@ chrome.tabs.onRemoved.addListener(
 function setAllTabInfo(AllTabInfo) {
 	for (var i=0; i<AllTabInfo.length; i++) {
 		for (var j=0; j<AllTabInfo[i]['tabs'].length; j++) {
+            // 新規タブは除外
+            if (AllTabInfo[i]['tabs'][j].url == 'chrome://newtab/'){ continue; }
+            // urlとindexをsetにして保存
 			openedTabArray[AllTabInfo[i]['tabs'][j].id] = {
                 'url'   :   AllTabInfo[i]['tabs'][j].url,
                 'index' :   AllTabInfo[i]['tabs'][j].index
