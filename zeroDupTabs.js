@@ -12,9 +12,11 @@ if (openedTabArray.length == 0) {
 
 chrome.tabs.onUpdated.addListener(
 	function(updateTabId, changeInfo, tabInfo) {
+        //console.log('* here is updated function');
         for (key in openedTabArray) {
             // すでに開いているurlが新規で開かれた時,removeしてすでに開いている方をactiveにする
             if (openedTabArray[key].url === changeInfo.url) {
+                //console.log('* remove url '+openedTabArray[updateTabId]);
                 chrome.tabs.remove(updateTabId);
                 if (openedTabArray[key].index != null) {
                     chrome.tabs.highlight({tabs: [openedTabArray[key]['index']]},function(){});
@@ -27,9 +29,24 @@ chrome.tabs.onUpdated.addListener(
                 'url'   :   changeInfo.url,
                 'index' :   tabInfo.index
             };
+            //console.log('* add url to memory '+changeInfo.url);
 			checkLengthAndArrayShift(openedTabArray);
 		}
 	}
+);
+
+chrome.tabs.onCreated.addListener(
+    function(createdTab) {
+        //console.log('* here is created function');
+        if (createdTab.url != null && createdTab.url != 'chrome://newtab/') {
+            for(key in openedTabArray){
+                if(createdTab.index <= openedTabArray[key].index) {
+                    openedTabArray[key].index = openedTabArray[key].index + 1;
+                    //console.log('* incremented index '+openedTabArray[key].url);
+                }
+            }
+        }
+    }
 );
 
 // 閉じたタブのurlを削除
@@ -39,8 +56,10 @@ chrome.tabs.onRemoved.addListener(
             for(key in openedTabArray){
                 if(openedTabArray[closedTabId].index < openedTabArray[key].index) {
                     openedTabArray[key].index = openedTabArray[key].index - 1;
+                    //console.log('* decremented index '+openedTabArray[key].url);
                 }
             }
+            //console.log('* close url '+openedTabArray[closedTabId].url);
 			delete openedTabArray[closedTabId];
 		}
 	}
@@ -57,6 +76,7 @@ function setAllTabInfo(AllTabInfo) {
                 'url'   :   AllTabInfo[i]['tabs'][j].url,
                 'index' :   AllTabInfo[i]['tabs'][j].index
             };
+            //console.log('* set url '+AllTabInfo[i]['tabs'][j].url);
 		}
 	}
 }
