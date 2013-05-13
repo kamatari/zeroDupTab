@@ -49,6 +49,27 @@ chrome.tabs.onCreated.addListener(
     }
 );
 
+// tabを移動させた時
+chrome.tabs.onMoved.addListener(
+    function(movedTabId, moveInfo) {
+       console.log('* onMoved windowId '+moveInfo.windowId+' fromIndex '+moveInfo.fromIndex+' toIndex '+moveInfo.toIndex);
+    }
+);
+
+// windowからtabを切り離したとき
+chrome.tabs.onDetached.addListener(
+    function(detachedTabId, detachInfo) {
+       console.log('* onDetached oldWindowId '+detachInfo.oldWindowId+' oldPosition '+detachInfo.oldPosition);
+    }
+);
+
+// tabを新しいwindowに移したとき
+chrome.tabs.onAttached.addListener(
+    function(atachedTabId, attachInfo) {
+       console.log('* onAtached newWindowId '+attachInfo.newWindowId+' newPosition '+attachInfo.newPosition);
+    }
+);
+
 // 閉じたタブのurlを削除
 chrome.tabs.onRemoved.addListener(
 	function(closedTabId) {
