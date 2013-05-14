@@ -39,10 +39,10 @@ chrome.tabs.onCreated.addListener(
     function(createdTab) {
         //console.log('* here is created function');
         if (createdTab.url != null && createdTab.url != 'chrome://newtab/') {
-            for(key in openedTabArray){
-                if(createdTab.index <= openedTabArray[key].index) {
+            for (key in openedTabArray) {
+                if (createdTab.index <= openedTabArray[key].index) {
                     openedTabArray[key].index = openedTabArray[key].index + 1;
-                    //console.log('* incremented index '+openedTabArray[key].url);
+                    //console.log('* increment index '+openedTabArray[key].url);
                 }
             }
         }
@@ -52,21 +52,36 @@ chrome.tabs.onCreated.addListener(
 // tabを移動させた時
 chrome.tabs.onMoved.addListener(
     function(movedTabId, moveInfo) {
-       console.log('* onMoved windowId '+moveInfo.windowId+' fromIndex '+moveInfo.fromIndex+' toIndex '+moveInfo.toIndex);
+        if (moveInfo.toIndex < moveInfo.fromIndex) {
+            for (key in openedTabArray) {
+                if ((moveInfo.toIndex <= openedTabArray[key].index) && (openedTabArray[key].index < moveInfo.fromIndex)) {
+                    openedTabArray[key].index = openedTabArray[key].index + 1;
+                    //console.log('* increment index '+openedTabArray[key].url);
+                }
+            }
+        } else {
+            for (key in openedTabArray) {
+                if ((moveInfo.fromIndex < openedTabArray[key].index) && (openedTabArray[key].index <= moveInfo.toIndex)) {
+                    openedTabArray[key].index = openedTabArray[key].index - 1;
+                    //console.log('* decrement index '+openedTabArray[key].url);
+                }
+            }
+        }
+        openedTabArray[movedTabId].index = moveInfo.toIndex;
     }
 );
 
 // windowからtabを切り離したとき
 chrome.tabs.onDetached.addListener(
     function(detachedTabId, detachInfo) {
-       console.log('* onDetached oldWindowId '+detachInfo.oldWindowId+' oldPosition '+detachInfo.oldPosition);
+       //console.log('* onDetached oldWindowId '+detachInfo.oldWindowId+' oldPosition '+detachInfo.oldPosition);
     }
 );
 
 // tabを新しいwindowに移したとき
 chrome.tabs.onAttached.addListener(
     function(atachedTabId, attachInfo) {
-       console.log('* onAtached newWindowId '+attachInfo.newWindowId+' newPosition '+attachInfo.newPosition);
+       //console.log('* onAtached newWindowId '+attachInfo.newWindowId+' newPosition '+attachInfo.newPosition);
     }
 );
 
@@ -77,7 +92,7 @@ chrome.tabs.onRemoved.addListener(
             for(key in openedTabArray){
                 if(openedTabArray[closedTabId].index < openedTabArray[key].index) {
                     openedTabArray[key].index = openedTabArray[key].index - 1;
-                    //console.log('* decremented index '+openedTabArray[key].url);
+                    //console.log('* decrement index '+openedTabArray[key].url);
                 }
             }
             //console.log('* close url '+openedTabArray[closedTabId].url);
