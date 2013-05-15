@@ -3,7 +3,6 @@
 
 var MaxTabArrayNum	= 10000;
 var openedTabArray	= new Array();
-var closedTabArray	= new Array();
 
 // extension が有効になった時点で開いているtabの情報をstock
 if (openedTabArray.length == 0) {
@@ -11,23 +10,28 @@ if (openedTabArray.length == 0) {
 }
 
 chrome.tabs.onUpdated.addListener(
-	function(updateTabId, changeInfo, tabInfo) {
+    function(updateTabId, changeInfo, tabInfo) {
         //console.log('* here is updated function');
         for (key in openedTabArray) {
             // すでに開いているurlが新規で開かれた時,removeしてすでに開いている方をactiveにする
             if (openedTabArray[key].url === changeInfo.url) {
                 //console.log('* remove url '+openedTabArray[updateTabId]);
                 chrome.tabs.remove(updateTabId);
+                console.log('array ?? windowid '+[openedTabArray[key]['windowId']]);
                 if (openedTabArray[key].index != null) {
-                    chrome.tabs.highlight({tabs: [openedTabArray[key]['index']]},function(){});
+                    chrome.tabs.highlight({
+                        tabs    : openedTabArray[key]['index'],
+                        windowId: openedTabArray[key]['windowId']
+                    },function(){});
                 }
             }
         }
         // 開いた状態になっているurlとそのindexを保存 (newtabは除外)
 		if (changeInfo.url != null && changeInfo.url != 'chrome://newtab/') {
 			openedTabArray[updateTabId] = {
-                'url'   :   changeInfo.url,
-                'index' :   tabInfo.index
+                'url'       :   changeInfo.url,
+                'index'     :   tabInfo.index,
+                'windowId'  :   tabInfo.windowId
             };
             //console.log('* add url to memory '+changeInfo.url);
 			checkLengthAndArrayShift(openedTabArray);
@@ -35,12 +39,14 @@ chrome.tabs.onUpdated.addListener(
 	}
 );
 
+// 新規tabが生成された時
 chrome.tabs.onCreated.addListener(
     function(createdTab) {
         //console.log('* here is created function');
         if (createdTab.url != null && createdTab.url != 'chrome://newtab/') {
             for (key in openedTabArray) {
-                if (createdTab.index <= openedTabArray[key].index) {
+                // 新規tabよりindexが大きいtabが存在した時、indexをひとつずらす
+                if ((createdTab.windowId == openedTabArray[key].windowId) && (createdTab.index <= openedTabArray[key].index)) {
                     openedTabArray[key].index = openedTabArray[key].index + 1;
                     //console.log('* increment index '+openedTabArray[key].url);
                 }
@@ -87,10 +93,10 @@ chrome.tabs.onAttached.addListener(
 
 // 閉じたタブのurlを削除
 chrome.tabs.onRemoved.addListener(
-	function(closedTabId) {
+	function(closedTabId, removeInfo) {
 		if (openedTabArray[closedTabId] != null) {
             for(key in openedTabArray){
-                if(openedTabArray[closedTabId].index < openedTabArray[key].index) {
+                if((removeInfo.windowId == openedTabArray[closedTabId].windowId) && (openedTabArray[closedTabId].index < openedTabArray[key].index)) {
                     openedTabArray[key].index = openedTabArray[key].index - 1;
                     //console.log('* decrement index '+openedTabArray[key].url);
                 }
@@ -109,10 +115,10 @@ function setAllTabInfo(AllTabInfo) {
             if (AllTabInfo[i]['tabs'][j].url == 'chrome://newtab/'){ continue; }
             // urlとindexをsetにして保存
 			openedTabArray[AllTabInfo[i]['tabs'][j].id] = {
-                'url'   :   AllTabInfo[i]['tabs'][j].url,
-                'index' :   AllTabInfo[i]['tabs'][j].index
+                'url'       :   AllTabInfo[i]['tabs'][j].url,
+                'index'     :   AllTabInfo[i]['tabs'][j].index,
+                'windowId'  :   AllTabInfo[i]['tabs'][j].windowId
             };
-            //console.log('* set url '+AllTabInfo[i]['tabs'][j].url);
 		}
 	}
 }
