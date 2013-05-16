@@ -85,14 +85,28 @@ chrome.tabs.onMoved.addListener(
 // windowからtabを切り離したとき
 chrome.tabs.onDetached.addListener(
     function(detachedTabId, detachInfo) {
-       //console.log('* onDetached oldWindowId '+detachInfo.oldWindowId+' oldPosition '+detachInfo.oldPosition);
+        for (key in openedTabArray) {
+            if (openedTabArray[key].windowId !== detachInfo.oldWindowId) {
+                continue;
+            }
+            if ((detachInfo.oldPosition < openedTabArray[key].index)) {
+                openedTabArray[key].index = openedTabArray[key].index - 1;
+            }
+        }
     }
 );
 
 // tabを新しいwindowに移したとき
 chrome.tabs.onAttached.addListener(
-    function(atachedTabId, attachInfo) {
-       //console.log('* onAtached newWindowId '+attachInfo.newWindowId+' newPosition '+attachInfo.newPosition);
+    function(attachedTabId, attachInfo) {
+        for (key in openedTabArray) {
+            if (openedTabArray[key].windowId !== attachInfo.newWindowId) {
+                continue;
+            }
+            if ((attachInfo.newPosition <= openedTabArray[key].index)) {
+                openedTabArray[key].index = openedTabArray[key].index + 1;
+            }
+        }
     }
 );
 
