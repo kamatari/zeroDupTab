@@ -17,7 +17,6 @@ chrome.tabs.onUpdated.addListener(
             if (openedTabArray[key].url === changeInfo.url) {
                 //console.log('* remove url '+openedTabArray[updateTabId]);
                 chrome.tabs.remove(updateTabId);
-                console.log('array ?? windowid '+[openedTabArray[key]['windowId']]);
                 if (openedTabArray[key].index != null) {
                     chrome.tabs.highlight({
                         tabs    : openedTabArray[key]['index'],
@@ -46,7 +45,7 @@ chrome.tabs.onCreated.addListener(
         if (createdTab.url != null && createdTab.url != 'chrome://newtab/') {
             for (key in openedTabArray) {
                 // 新規tabよりindexが大きいtabが存在した時、indexをひとつずらす
-                if ((createdTab.windowId == openedTabArray[key].windowId) && (createdTab.index <= openedTabArray[key].index)) {
+                if ((createdTab.windowId === openedTabArray[key].windowId) && (createdTab.index <= openedTabArray[key].index)) {
                     openedTabArray[key].index = openedTabArray[key].index + 1;
                     //console.log('* increment index '+openedTabArray[key].url);
                 }
@@ -60,6 +59,9 @@ chrome.tabs.onMoved.addListener(
     function(movedTabId, moveInfo) {
         if (moveInfo.toIndex < moveInfo.fromIndex) {
             for (key in openedTabArray) {
+                if (openedTabArray[key].windowId !== moveInfo.windowId) {
+                    continue;
+                }
                 if ((moveInfo.toIndex <= openedTabArray[key].index) && (openedTabArray[key].index < moveInfo.fromIndex)) {
                     openedTabArray[key].index = openedTabArray[key].index + 1;
                     //console.log('* increment index '+openedTabArray[key].url);
@@ -67,6 +69,9 @@ chrome.tabs.onMoved.addListener(
             }
         } else {
             for (key in openedTabArray) {
+                if (openedTabArray[key].windowId !== moveInfo.windowId) {
+                    continue;
+                }
                 if ((moveInfo.fromIndex < openedTabArray[key].index) && (openedTabArray[key].index <= moveInfo.toIndex)) {
                     openedTabArray[key].index = openedTabArray[key].index - 1;
                     //console.log('* decrement index '+openedTabArray[key].url);
@@ -96,7 +101,7 @@ chrome.tabs.onRemoved.addListener(
 	function(closedTabId, removeInfo) {
 		if (openedTabArray[closedTabId] != null) {
             for(key in openedTabArray){
-                if((removeInfo.windowId == openedTabArray[closedTabId].windowId) && (openedTabArray[closedTabId].index < openedTabArray[key].index)) {
+                if((removeInfo.windowId === openedTabArray[closedTabId].windowId) && (openedTabArray[closedTabId].index < openedTabArray[key].index)) {
                     openedTabArray[key].index = openedTabArray[key].index - 1;
                     //console.log('* decrement index '+openedTabArray[key].url);
                 }
